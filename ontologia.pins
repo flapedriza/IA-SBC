@@ -1,15 +1,7 @@
-; Sat May 20 18:20:50 CEST 2017
+; Sat May 20 22:40:02 CEST 2017
 ; 
-;+ (version "3.4.8")
-;+ (build "Build 629")
-
-([Evento] of  %3ASTANDARD-CLASS
-
-	(%3ASLOT-CONSTRAINTS [ontologia_Class10007]))
-
-([Ingrediente] of  %3ASTANDARD-CLASS
-
-	(%3ASLOT-CONSTRAINTS [ontologia_Class50011]))
+;+ (version "3.5")
+;+ (build "Build 663")
 
 ([ontologia_Class0] of  Plato
 
@@ -127,9 +119,6 @@
 	(temperatura caliente)
 	(tipo verdura)
 	(vegetariano TRUE))
-
-([ontologia_Class10007] of  %3APAL-CONSTRAINT
-)
 
 ([ontologia_Class20000] of  Plato
 
@@ -3093,6 +3082,3 @@
 
 	(nombre "uva")
 	(pertenece [ontologia_Class40007]))
-
-([ontologia_Class50011] of  %3APAL-CONSTRAINT
-)

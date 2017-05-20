@@ -1,16 +1,8 @@
-; Sat May 20 20:51:49 CEST 2017
+; Sat May 20 22:40:29 CEST 2017
 ;
-;+ (version "3.4.8")
-;+ (build "Build 629")
+;+ (version "3.5")
+;+ (build "Build 663")
 (definstances instancies
-	; ([Evento] of  :STANDARD-CLASS
-	;
-	; 	(:SLOT-CONSTRAINTS [ontologia_Class10007]))
-	;
-	; ([Ingrediente] of  :STANDARD-CLASS
-	;
-	; 	(:SLOT-CONSTRAINTS [ontologia_Class50011]))
-
 	([ontologia_Class0] of  Plato
 
 		(compl baja)
@@ -127,9 +119,6 @@
 		(temperatura caliente)
 		(tipo verdura)
 		(vegetariano TRUE))
-
-	; ([ontologia_Class10007] of  :PAL-CONSTRAINT
-	; )
 
 	([ontologia_Class20000] of  Plato
 
@@ -3093,7 +3082,4 @@
 
 		(nombre "uva")
 		(pertenece [ontologia_Class40007]))
-
-	; ([ontologia_Class50011] of  :PAL-CONSTRAINT
-	; )
 )

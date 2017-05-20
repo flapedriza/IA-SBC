@@ -1,10 +1,10 @@
 ; Sat May 20 20:51:49 CEST 2017
-; 
+;
 ;+ (version "3.4.8")
 ;+ (build "Build 629")
 
 
-(defclass %3ACLIPS_TOP_LEVEL_SLOT_CLASS "Fake class to save top-level slot information"
+(defclass :CLIPS_TOP_LEVEL_SLOT_CLASS "Fake class to save top-level slot information"
 	(is-a USER)
 	(role abstract)
 	(multislot bebida
@@ -105,7 +105,7 @@
 	(single-slot num_comensales
 ;+		(comment "cuantos comensales asistiran")
 		(type INTEGER)
-		(range 1 %3FVARIABLE)
+		(range 1 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot region
@@ -117,7 +117,7 @@
 	(single-slot preparacion
 ;+		(comment "como se ha cocinado")
 		(type SYMBOL)
-		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa%2Fcrema)
+		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa/crema)
 		(default indiferente)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
@@ -130,13 +130,13 @@
 	(single-slot precio
 ;+		(comment "cuanto vale (moneda)")
 		(type INTEGER)
-		(range 0 %3FVARIABLE)
+		(range 0 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot precio_max
 ;+		(comment "precio maximo del menu del evento")
 		(type INTEGER)
-		(range 1 %3FVARIABLE)
+		(range 1 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot tipo_ag
@@ -178,7 +178,7 @@
 	(single-slot precio_min
 ;+		(comment "precio minimo del menu del evento")
 		(type INTEGER)
-		(range 0 %3FVARIABLE)
+		(range 0 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(multislot estilo
@@ -219,14 +219,14 @@
 	(single-slot preparacion
 ;+		(comment "como se ha cocinado")
 		(type SYMBOL)
-		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa%2Fcrema)
+		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa/crema)
 		(default indiferente)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot precio
 ;+		(comment "cuanto vale (moneda)")
 		(type INTEGER)
-		(range 0 %3FVARIABLE)
+		(range 0 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot orden
@@ -297,7 +297,7 @@
 	(single-slot precio
 ;+		(comment "cuanto vale (moneda)")
 		(type INTEGER)
-		(range 0 %3FVARIABLE)
+		(range 0 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write)))
 
@@ -368,7 +368,7 @@
 	(single-slot num_comensales
 ;+		(comment "cuantos comensales asistiran")
 		(type INTEGER)
-		(range 1 %3FVARIABLE)
+		(range 1 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot restriccion
@@ -394,7 +394,7 @@
 	(single-slot precio_min
 ;+		(comment "precio minimo del menu del evento")
 		(type INTEGER)
-		(range 0 %3FVARIABLE)
+		(range 0 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(multislot estilo
@@ -407,7 +407,7 @@
 	(single-slot precio_max
 ;+		(comment "precio maximo del menu del evento")
 		(type INTEGER)
-		(range 1 %3FVARIABLE)
+		(range 1 ?VARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot maridaje
@@ -448,7 +448,7 @@
 	(single-slot preparacion
 ;+		(comment "como se ha cocinado")
 		(type SYMBOL)
-		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa%2Fcrema)
+		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa/crema)
 		(default indiferente)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))

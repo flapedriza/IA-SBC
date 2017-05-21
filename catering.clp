@@ -32,7 +32,6 @@
     (bind ?beb2 (send ?segon get-marida_con))
     (if (eq ?beb2 [nil]) then (bind ?beb2 nil))
   )
-  (printout t ?beb1 "min: " ?min " max " ?max crlf)
   (bind ?newMen
     (make-instance (sym-cat Menu:(send ?primer get-nombre)-(send ?segon get-nombre)-(send ?postre get-nombre)) of Menu
       (primero ?primer)
@@ -262,7 +261,7 @@
   (if (= ?resp 2) then (assert (seleccion-tipo-bebida Cerveza)))
   (if (= ?resp 3) then (assert (seleccion-tipo-bebida Refresco)))
   (if (= ?resp 4) then (assert (seleccion-tipo-bebida Vino)))
-  (if (= ?resp 5) then (assert (Maridaje true)) else (assert (Maridaje false)))
+  (if (= ?resp 5) then (assert (Maridaje TRUE)) else (assert (Maridaje FALSE)))
 )
 
 (defrule pregunta-agua "Pregunta para saber tipos de bebidas"
@@ -392,11 +391,10 @@
   (send ?plat delete)
 )
 
-(defrule focus-menus ""
+(defrule focus-menus
   (declare (salience -10))
   =>
   (assert (menus))
-  (printout t "focusing on menus" crlf)
   (focus menus)
 )
 ;;;*************
@@ -411,7 +409,7 @@
 )
 
 (defrule genera-menus-mari ""
-  ?v <- (start)
+  ?v <- (menus)
   (Maridaje TRUE)
   (PrecioMaximo ?max)
   (PrecioMinimo ?min)
@@ -431,11 +429,12 @@
     )
   )
   (assert (menus_generados))
+  (retract ?v)
 )
 
 (defrule genera-menus-no-mari ""
-  ?v <- (start)
-  (Maridaje False)
+  ?v <- (menus)
+  (Maridaje FALSE)
   (PrecioMaximo ?max)
   (PrecioMinimo ?min)
   (Bebida ?selbeb)
@@ -455,4 +454,5 @@
     )
   )
   (assert (menus_generados))
+  (retract ?v)
 )

@@ -23,6 +23,53 @@
   alto
 )
 
+(deffunction create-menu (?primer ?segon ?postre ?maridaje ?bebi1 ?min ?max)
+  (bind ?beb1 ?bebi1)
+  (bind ?beb2 nil)
+  (if ?maridaje then
+    (bind ?beb1 (send ?primer get-marida_con))
+    (if (eq ?beb1 [nil]) then (bind ?beb1 ?bebi1))
+    (bind ?beb2 (send ?segon get-marida_con))
+    (if (eq ?beb2 [nil]) then (bind ?beb2 nil))
+  )
+  (printout t ?beb1 "min: " ?min " max " ?max crlf)
+  (bind ?newMen
+    (make-instance (sym-cat Menu:(send ?primer get-nombre)-(send ?segon get-nombre)-(send ?postre get-nombre)) of Menu
+      (primero ?primer)
+      (segundo ?segon)
+      (postre ?postre)
+      (bebida1 ?beb1)
+      (bebida2 ?beb2)
+      (maridaje ?maridaje)
+    )
+  )
+  (send ?newMen calc-coste ?min ?max)
+  ?newMen
+)
+
+(deffunction busca-inst (?tipus)
+  (switch ?tipus
+    (case AguaMineral then (find-instance((?a Agua)) (eq (send ?a get-tipo_ag) mineral)))
+    (case AguaGas then (find-instance((?a Agua)) (eq (send ?a get-tipo_ag) gas)))
+    (case CervezaTrigo then (find-instance((?a Cerveza)) (eq (send ?a get-tipo_cer) trigo)))
+    (case CervezaCebada then (find-instance((?a Cerveza)) (eq (send ?a get-tipo_cer) cebada)))
+    (case VinoTinto then (find-instance((?a Vino)) (eq (send ?a get-tipo_vin) tinto)))
+    (case VinoRosado then (find-instance((?a Vino)) (eq (send ?a get-tipo_vin) rosado)))
+    (case VinoBlanco then (find-instance((?a Vino)) (eq (send ?a get-tipo_vin) blanco)))
+    (case Cava then (find-instance((?a Vino)) (eq (send ?a get-tipo_vin) cava)))
+    (case CocaCola then (find-instance((?a Refresco)) (eq (send ?a get-tipo_ref) cocacola)))
+    (case Fanta then (find-instance((?a Refresco)) (eq (send ?a get-tipo_ref) fanta)))
+    (case Nestea then (find-instance((?a Refresco)) (eq (send ?a get-tipo_ref) nestea)))
+  )
+)
+
+(deffunction busca-beguda (?tipus)
+  (bind ?ret (nth$ 1 (busca-inst ?tipus)))
+  ?ret
+)
+
+
+
 ;;; Message handlers Plato
 (defmessage-handler Plato imprimir primary ()
   (format t "%s, plato %s de %s Precio: %g euros %n" ?self:nombre ?self:temperatura ?self:tipo ?self:precio)
@@ -101,6 +148,11 @@
       (bind ?sum (+ ?sum (send ?self:bebida2 get-precio)))
     )
     ?sum
+)
+
+(defmessage-handler Menu calc-coste primary (?min ?max)
+  (bind ?precio (send ?self calc-precio))
+  (bind ?self:coste (price-range ?min ?max ?precio))
 )
 
 (deffunction pregunta-general (?pregunta)
@@ -344,6 +396,7 @@
   (declare (salience -10))
   =>
   (assert (menus))
+  (printout t "focusing on menus" crlf)
   (focus menus)
 )
 ;;;*************
@@ -357,14 +410,49 @@
   (export ?ALL)
 )
 
-(defrule genera-menus ""
-  ?v <- (menus)
+(defrule genera-menus-mari ""
+  ?v <- (start)
+  (Maridaje TRUE)
+  (PrecioMaximo ?max)
+  (PrecioMinimo ?min)
   =>
   (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
-  (loop-for-count (?i 1 (length$ ?priseg)) do
-    (send (nth$ ?i ?priseg) imprimir)
+  (loop-for-count (?i 1 (length$ ?primers)) do
+    (bind ?prim (nth$ ?i ?primers))
+    (loop-for-count (?j 1 (length$ ?segons)) do
+    (bind ?seg (nth$ ?j ?segons))
+      (loop-for-count (?k 1 (length$ ?postres)) do
+        (bind ?postr (nth$ ?k ?postres))
+        (create-menu ?prim ?seg ?postr TRUE (busca-beguda AguaMineral) ?max ?min)
+      )
+    )
   )
+  (assert (menus_generados))
+)
+
+(defrule genera-menus-no-mari ""
+  ?v <- (start)
+  (Maridaje False)
+  (PrecioMaximo ?max)
+  (PrecioMinimo ?min)
+  (Bebida ?selbeb)
+  =>
+  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (loop-for-count (?i 1 (length$ ?primers)) do
+    (bind ?prim (nth$ ?i ?primers))
+    (loop-for-count (?j 1 (length$ ?segons)) do
+    (bind ?seg (nth$ ?j ?segons))
+      (loop-for-count (?k 1 (length$ ?postres)) do
+        (bind ?postr (nth$ ?k ?postres))
+        (create-menu ?prim ?seg ?postr FALSE (busca-beguda ?selbeb) ?max ?min)
+      )
+    )
+  )
+  (assert (menus_generados))
 )

@@ -151,6 +151,10 @@
 
 (defmessage-handler Menu calc-coste primary (?min ?max)
   (bind ?precio (send ?self calc-precio))
+  (if (or (< ?precio ?max) (> ?precio ?min)) then
+    (send ?self delete)
+    (return)
+  )
   (bind ?self:coste (price-range ?min ?max ?precio))
 )
 
@@ -303,7 +307,11 @@
 
 (defrule pregunta-ingredientes "Pregunta para saber ingredientes prohibidos"
   (start)
-  (Bebida ?b)
+  (or
+    (and (Bebida ?b) (Maridaje FALSE))
+    (Maridaje TRUE)
+  )
+
   =>
   (bind ?lista (find-all-instances ((?x Ingrediente)) TRUE))
   (bind $?valores_permitidos (create$ 0))
@@ -418,13 +426,18 @@
   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (bind ?beguda (busca-beguda AguaMineral))
+  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+  )
   (loop-for-count (?i 1 (length$ ?primers)) do
     (bind ?prim (nth$ ?i ?primers))
     (loop-for-count (?j 1 (length$ ?segons)) do
     (bind ?seg (nth$ ?j ?segons))
       (loop-for-count (?k 1 (length$ ?postres)) do
         (bind ?postr (nth$ ?k ?postres))
-        (create-menu ?prim ?seg ?postr TRUE (busca-beguda AguaMineral) ?max ?min)
+        (create-menu ?prim ?seg ?postr TRUE ?beguda ?max ?min)
       )
     )
   )
@@ -443,13 +456,18 @@
   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (bind ?beguda (busca-beguda ?selbeb))
+  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+  )
   (loop-for-count (?i 1 (length$ ?primers)) do
     (bind ?prim (nth$ ?i ?primers))
     (loop-for-count (?j 1 (length$ ?segons)) do
     (bind ?seg (nth$ ?j ?segons))
       (loop-for-count (?k 1 (length$ ?postres)) do
         (bind ?postr (nth$ ?k ?postres))
-        (create-menu ?prim ?seg ?postr FALSE (busca-beguda ?selbeb) ?max ?min)
+        (create-menu ?prim ?seg ?postr FALSE ?beguda ?max ?min)
       )
     )
   )

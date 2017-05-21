@@ -1,4 +1,4 @@
-; Sat May 20 22:40:29 CEST 2017
+; Sun May 21 18:50:38 CEST 2017
 ;
 ;+ (version "3.5")
 ;+ (build "Build 663")
@@ -87,6 +87,13 @@
 		(allowed-values FALSE TRUE)
 		(default FALSE)
 ;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot puntuacion
+;+		(comment "Puntuacion del menu en base al sistema de recomendacion")
+		(type INTEGER)
+		(range 0 ?VARIABLE)
+		(default 0)
+;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot segundo
 		(type INSTANCE)
@@ -497,6 +504,13 @@
 		(allowed-values FALSE TRUE)
 		(default FALSE)
 ;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot puntuacion
+;+		(comment "Puntuacion del menu en base al sistema de recomendacion")
+		(type INTEGER)
+		(range 0 ?VARIABLE)
+		(default 0)
+;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot bebida1
 ;+		(comment "bebida del primero / bebida para todo el menu en caso de no haber bebida2")

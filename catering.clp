@@ -14,28 +14,17 @@
 )
 
 ;;;Utils
-(deffunction preu-baix (?min ?max)
+(deffunction price_range (?min ?max ?val)
   (bind ?diff (- ?max ?min))
-  (bind ?diff (/ ?diff 3))
-  (bind ?diff (+ ?min ?diff))
-  ?diff
+  (bind ?low (+ ?min ?diff))
+  (bind ?med (+ ?min (* ?diff 2)))
+  (printout t "bajo: " ?low "alto: " ?med crlf)
+  (if (<= ?val ?low) then (return bajo))
+  (if (<= ?val ?med) then (return medio))
+  alto
 )
 
-(deffunction preu-mig (?min ?max)
-  (bind ?diff (- ?max ?min))
-  (bind ?diff (/ ?diff 3))
-  (bind ?diff (+ ?min (* 2 ?diff)))
-  ?diff
-)
-
-(deffunction preu-alt (?min ?max)
-  (bind ?diff (- ?max ?min))
-  (bind ?diff (/ ?diff 3))
-  (bind ?diff (+ ?min (* 3 ?diff)))
-  ?diff
-)
-
-;;; Message handlers Palto
+;;; Message handlers Plato
 (defmessage-handler Plato imprimir primary ()
   (format t "%s, plato %s de %s Precio: %g euros %n" ?self:nombre ?self:temperatura ?self:tipo ?self:precio)
   (printout t crlf)
@@ -115,19 +104,19 @@
     ?sum
 )
 
-(deffunction pregunta-general (?pregunta) 
-  (format t "%s" ?pregunta) 
-  (bind ?respuesta (read)) 
+(deffunction pregunta-general (?pregunta)
+  (format t "%s" ?pregunta)
+  (bind ?respuesta (read))
   ?respuesta
 )
 
-(deffunction pregunta-numerica (?pregunta ?rangini ?rangfi) 
-  (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi) 
-  (bind ?respuesta (read)) 
-  (while (not(and(>= ?respuesta ?rangini)(<= ?respuesta ?rangfi))) do 
-    (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi) 
-    (bind ?respuesta (read)) 
-  ) 
+(deffunction pregunta-numerica (?pregunta ?rangini ?rangfi)
+  (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi)
+  (bind ?respuesta (read))
+  (while (not(and(>= ?respuesta ?rangini)(<= ?respuesta ?rangfi))) do
+    (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi)
+    (bind ?respuesta (read))
+  )
   ?respuesta
 )
 
@@ -144,14 +133,14 @@
   )
 )
 
-;;; Funcion para hacer una pregunta con un conjunto definido de valores de repuesta    
-(deffunction pregunta-lista (?pregunta $?valores_posibles) 
-  (format t "%s" ?pregunta)  
-  (bind ?resposta (readline))  
+;;; Funcion para hacer una pregunta con un conjunto definido de valores de repuesta
+(deffunction pregunta-lista (?pregunta $?valores_posibles)
+  (format t "%s" ?pregunta)
+  (bind ?resposta (readline))
   (bind ?res (str-explode ?resposta))
-  (loop-for-count (?i 1 (length$ ?res)) do 
+  (loop-for-count (?i 1 (length$ ?res)) do
     (if (not(member (nth$ ?i ?res) ?valores_posibles)) then
-      (printout t "El valor " (nth$ ?i ?res) " no es un valido" crlf)
+      (printout t "El valor " (nth$ ?i ?res) " no es un valor valido" crlf)
       (bind ?valor (pregunta-numerica "Introduce un nuevo valor " 1 (- (length$ ?valores_posibles) 1)))
       (bind $?res (delete$ ?res ?i ?i))
       (bind $?res (insert$ ?res ?i ?valor))
@@ -171,6 +160,7 @@
   (printout t crlf crlf)
   (printout t "Generador de Menus")
   (printout t crlf crlf)
+  (printout t "Bienvenido, para obtener las sujerencias de menu responda a las siguientes preguntas." crlf)
   (assert (start))
 )
 
@@ -179,8 +169,7 @@
 (defrule pregunta-numero "Pregunta para saber el número de comensales"
   (start)
   =>
-  (printout t "Bienvenido, para obtener las sujerencias de menu responda a las siguientes preguntas." crlf)
-  (bind ?pers (pregunta-numerica "Cuantos menus quereis reservar?" 0 10000))
+  (bind ?pers (pregunta-numerica "Cuantos comensales asistirán al evento?" 0 10000))
   (assert (NumComensales ?pers))
 )
 
@@ -205,10 +194,10 @@
   (bind ?pmax (pregunta-numerica "Cual es el precio maximo que quiere gastarse por menu?" 0 1000))
   (assert (PrecioMaximo ?pmax))
   (bind ?pmin (pregunta-numerica "Cual es el precio minimo que quiere gastarse por menu?" 0 ?pmax))
-  (assert (PrecioMaximo ?pmin))
+  (assert (PrecioMinimo ?pmin))
 )
 
-(defrule pregunta-fecha "Pregunta para saber la fecha"
+(defrule pregunta-bebida "Pregunta para saber la/s bebida/s"
   (start)
   =>
   (printout t "Que quiere para beber?" crlf)
@@ -222,7 +211,7 @@
   (if (= ?resp 2) then (assert (seleccion-tipo-bebida Cerveza)))
   (if (= ?resp 3) then (assert (seleccion-tipo-bebida Refresco)))
   (if (= ?resp 4) then (assert (seleccion-tipo-bebida Vino)))
-  (if (= ?resp 5) then (assert (Maridaje true)) else (assert (Maridaje false)))  
+  (if (= ?resp 5) then (assert (Maridaje true)) else (assert (Maridaje false)))
 )
 
 (defrule pregunta-agua "Pregunta para saber tipos de bebidas"
@@ -264,6 +253,7 @@
 
 (defrule pregunta-ingredientes "Pregunta para saber ingredientes prohibidos"
   (start)
+  (Bebida ?b)
   =>
   (bind ?lista (find-all-instances ((?x Ingrediente)) TRUE))
   (bind $?valores_permitidos (create$ 0))
@@ -317,21 +307,13 @@
   (assert (Vegetariano ?resp))
 )
 
-;;;****************************
-
-
-(defmodule MAIN (export ?ALL))
-
-(defrule prova ""
-  (declare (salience 100))
+(defrule focus-filter
+  (declare (salience -10))
   =>
-  (printout t "Hola")
-  (assert (start))
-  (assert (Vegetariano TRUE))
-  (assert (IngredienteProhibido "butifarra blanca"))
-  (assert (IngredienteProhibido "tomate"))
   (focus filtre)
 )
+
+;;;****************************
 
 ;;;*********
 ;;;Filtratge
@@ -359,12 +341,12 @@
   (send ?plat delete)
 )
 
-(defrule focus-menus ""
-  (declare (salience -10))
-  =>
-  (assert (menus))
-  (focus menus)
-)
+; (defrule focus-menus ""
+;   (declare (salience -10))
+;   =>
+;   (assert (menus))
+;   (focus menus)
+; )
 ;;;*************
 ;;;Recomanacions
 ;;;*************
@@ -373,7 +355,7 @@
 (defmodule menus
   (import MAIN ?ALL)
   (import filtre ?ALL)
-  (export =ALL)
+  (export ?ALL)
 )
 
 (defrule genera-menus ""
@@ -381,4 +363,3 @@
   =>
   (bind $?primers (find-all-instances ((?p Plato))  (or (eq (send ?p get-orden) primero) (eq (send ?p get-orden) ambos))))
 )
-

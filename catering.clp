@@ -14,11 +14,10 @@
 )
 
 ;;;Utils
-(deffunction price_range (?min ?max ?val)
-  (bind ?diff (- ?max ?min))
+(deffunction price-range (?min ?max ?val)
+  (bind ?diff (/ (- ?max ?min) 3))
   (bind ?low (+ ?min ?diff))
   (bind ?med (+ ?min (* ?diff 2)))
-  (printout t "bajo: " ?low "alto: " ?med crlf)
   (if (<= ?val ?low) then (return bajo))
   (if (<= ?val ?med) then (return medio))
   alto
@@ -341,12 +340,12 @@
   (send ?plat delete)
 )
 
-; (defrule focus-menus ""
-;   (declare (salience -10))
-;   =>
-;   (assert (menus))
-;   (focus menus)
-; )
+(defrule focus-menus ""
+  (declare (salience -10))
+  =>
+  (assert (menus))
+  (focus menus)
+)
 ;;;*************
 ;;;Recomanacions
 ;;;*************
@@ -361,5 +360,11 @@
 (defrule genera-menus ""
   ?v <- (menus)
   =>
-  (bind $?primers (find-all-instances ((?p Plato))  (or (eq (send ?p get-orden) primero) (eq (send ?p get-orden) ambos))))
+  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (loop-for-count (?i 1 (length$ ?priseg)) do
+    (send (nth$ ?i ?priseg) imprimir)
+  )
 )

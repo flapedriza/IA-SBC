@@ -1,0 +1,5 @@
+(clear)
+(load classes.clp)
+(load instances.clp)
+(load catering.clp)
+(reset)

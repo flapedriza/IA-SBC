@@ -13,11 +13,25 @@
   (multislot recomanacions (type INSTANCE))
 )
 
+;;; Message handlers Palto
 (defmessage-handler Plato imprimir primary ()
-  (format t "%s, plato %s de %s Precio: %s€ %n" ?self:nombre ?self:temperatura ?self:tipo ?self:precio)
+  (format t "%s, plato %s de %s Precio: %g euros %n" ?self:nombre ?self:temperatura ?self:tipo ?self:precio)
   (printout t crlf)
 )
 
+(defmessage-handler Plato has-ingredient primary (?ing)
+  (bind ?i 1)
+  (bind ?b FALSE)
+  (while (and (not ?b) (<= ?i (length$ ?self:contiene)))
+    (if (eq (str-cat ?ing) (send (nth$ ?i ?self:contiene) get-nombre)) then
+      (bind ?b TRUE)
+    else (bind ?i (+ ?i 1))
+    )
+  )
+  ?b
+)
+
+;;;Message handlers begudes
 (defmessage-handler Agua imprimir primary ()
   (format t "Agua %s " ?self:tipo_ag)
   (printout t)
@@ -47,10 +61,11 @@
 )
 
 (defmessage-handler Bebida imprecio  primary ()
-  (format t "Precio: %g€" ?self:precio)
+  (format t "Precio: %g euros" ?self:precio)
   (printout t crlf)
 )
 
+;;; Message handlers Manu
 (defmessage-handler Menu imprimir primary ()
   (printout t "-------------------------------" crlf)
   (printout t "Primer plato: ")
@@ -62,17 +77,18 @@
   (format t "Bebidas: %n")
   (printout t)
   (send ?self:bebida1 imprimir)
-  (send ?self:bebida2 imprimir)
+  (if(neq ?self:bebida2 nil) then (send ?self:bebida2 imprimir))
+  (printout t crlf "Precio total: " (send ?self calc-precio) "euros" crlf)
   (printout t "-------------------------------" crlf)
 )
 
-
-(deffunction pregunta-text(?pregunta)
-  (format t "%s" ?pregunta)
-  (bind ?resposta (read))
-  ?resposta
-)
-
-(deffunction pregunta-num(?pregunta ?min ?max)
-
+(defmessage-handler Menu calc-precio primary ()
+    (bind ?sum (send ?self:primero get-precio))
+    (bind ?sum (+ ?sum (send ?self:segundo get-precio)))
+    (bind ?sum (+ ?sum (send ?self:postre get-precio)))
+    (bind ?sum (+ ?sum (send ?self:bebida1 get-precio)))
+    (if (neq ?self:bebida2 nil) then
+      (bind ?sum (+ ?sum (send ?self:bebida2 get-precio)))
+    )
+    ?sum
 )

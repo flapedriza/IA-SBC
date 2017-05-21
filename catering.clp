@@ -1,4 +1,3 @@
-
 ;;;*************
 ;;;Codi CLIPS
 ;;;*************
@@ -11,6 +10,28 @@
 ;;;Template per a la llista de recomanacions ordenada
 (deftemplate llista-rec-ordenada
   (multislot recomanacions (type INSTANCE))
+)
+
+;;;Utils
+(deffunction preu-baix (?min ?max)
+  (bind ?diff (- ?max ?min))
+  (bind ?diff (/ ?diff 3))
+  (bind ?diff (+ ?min ?diff))
+  ?diff
+)
+
+(deffunction preu-mig (?min ?max)
+  (bind ?diff (- ?max ?min))
+  (bind ?diff (/ ?diff 3))
+  (bind ?diff (+ ?min (* 2 ?diff)))
+  ?diff
+)
+
+(deffunction preu-alt (?min ?max)
+  (bind ?diff (- ?max ?min))
+  (bind ?diff (/ ?diff 3))
+  (bind ?diff (+ ?min (* 3 ?diff)))
+  ?diff
 )
 
 ;;; Message handlers Palto
@@ -65,7 +86,7 @@
   (printout t crlf)
 )
 
-;;; Message handlers Manu
+;;; Message handlers Menu
 (defmessage-handler Menu imprimir primary ()
   (printout t "-------------------------------" crlf)
   (printout t "Primer plato: ")
@@ -92,3 +113,66 @@
     )
     ?sum
 )
+
+(defmodule MAIN (export ?ALL))
+
+(defrule prova ""
+  (declare (salience 100))
+  =>
+  (printout t "Hola")
+  (assert (start))
+  (assert (Vegetariano TRUE))
+  (assert (IngredienteProhibido "butifarra blanca"))
+  (assert (IngredienteProhibido "tomate"))
+  (focus filtre)
+)
+
+;;;*********
+;;;Filtratge
+;;;*********
+(defmodule filtre
+  (import MAIN ?ALL)
+  (export ?ALL)
+)
+
+(defrule borra-no-vegetarians "Elimina els plats no vegetarians si el client ho ha demanat"
+  (Vegetariano TRUE)
+  ?plat <- (object (is-a Plato))
+  (test (not (send ?plat get-vegetariano)))
+  =>
+  (printout t "Eliminado " (send ?plat get-nombre) " por no ser vegetariano" crlf)
+  (send ?plat delete)
+)
+
+(defrule borra-ingredients-prohibits "Elimina els plats que continguin ingredients prohibits"
+  (IngredienteProhibido ?ingr)
+  ?plat <- (object (is-a Plato))
+  (test (send ?plat has-ingredient ?ingr))
+  =>
+  (printout t "Eliminado " (send ?plat get-nombre) " por contener " ?ingr crlf)
+  (send ?plat delete)
+)
+
+(defrule focus-menus ""
+  (declare (salience -10))
+  =>
+  (assert (menus))
+  (focus menus)
+)
+;;;*************
+;;;Recomanacions
+;;;*************
+;(do-for-all-instances ((?p Plato))  (or (eq (send ?p get-orden) primero) (eq (send ?p get-orden) ambos)) (send ?p imprimir))
+
+(defmodule menus
+  (import MAIN ?ALL)
+  (import filtre ?ALL)
+  (export =ALL)
+)
+
+(defrule genera-menus ""
+  ?v <- (menus)
+  =>
+  (bind $?primers (find-all-instances ((?p Plato))  (or (eq (send ?p get-orden) primero) (eq (send ?p get-orden) ambos))))
+)
+

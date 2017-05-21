@@ -1,4 +1,4 @@
-; Sat May 20 22:40:02 CEST 2017
+; Sun May 21 13:54:35 CEST 2017
 ; 
 ;+ (version "3.5")
 ;+ (build "Build 663")
@@ -2998,7 +2998,7 @@
 	(region UK)
 	(temperatura frio)
 	(tipo pastel)
-	(vegetariano FALSE))
+	(vegetariano TRUE))
 
 ([ontologia_Class40053] of  Ingrediente
 
@@ -3021,7 +3021,7 @@
 	(region UK)
 	(temperatura frio)
 	(tipo pastel)
-	(vegetariano FALSE))
+	(vegetariano TRUE))
 
 ([ontologia_Class40055] of  Plato
 

@@ -2,6 +2,7 @@
 ;;;Codi CLIPS
 ;;;*************
 
+
 ;;;Template per a la llista de recomanacions sense ordenar
 (deftemplate llista-rec-desordenada
   (multislot recomanacions (type INSTANCE))
@@ -113,6 +114,211 @@
     )
     ?sum
 )
+
+(deffunction pregunta-general (?pregunta) 
+  (format t "%s" ?pregunta) 
+  (bind ?respuesta (read)) 
+  ?respuesta
+)
+
+(deffunction pregunta-numerica (?pregunta ?rangini ?rangfi) 
+  (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi) 
+  (bind ?respuesta (read)) 
+  (while (not(and(>= ?respuesta ?rangini)(<= ?respuesta ?rangfi))) do 
+    (format t "%s [%d, %d] " ?pregunta ?rangini ?rangfi) 
+    (bind ?respuesta (read)) 
+  ) 
+  ?respuesta
+)
+
+(deffunction pregunta-booleana (?pregunta)
+  (format t "%s (s/n) " ?pregunta)
+  (bind ?resp (read))
+  (while (not (or (eq ?resp s)(eq ?resp n)(eq ?resp si)(eq ?resp no))) do
+    (format t "%s (s/n)" ?pregunta)
+    (bind ?resp (read))
+  )
+  (if (or (eq ?resp s) (eq ?resp si))
+    then TRUE
+    else FALSE
+  )
+)
+
+;;; Funcion para hacer una pregunta con un conjunto definido de valores de repuesta    
+(deffunction pregunta-lista (?pregunta $?valores_posibles) 
+  (format t "%s" ?pregunta)  
+  (bind ?resposta (readline))  
+  (bind ?res (str-explode ?resposta))
+  (loop-for-count (?i 1 (length$ ?res)) do 
+    (if (not(member (nth$ ?i ?res) ?valores_posibles)) then
+      (printout t "El valor " (nth$ ?i ?res) " no es un valido" crlf)
+      (bind ?valor (pregunta-numerica "Introduce un nuevo valor " 1 (- (length$ ?valores_posibles) 1)))
+      (bind $?res (delete$ ?res ?i ?i))
+      (bind $?res (insert$ ?res ?i ?valor))
+    )
+  )
+  ?res
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmodule MAIN (export ?ALL))
+
+;;; Banner de inicio
+(defrule banner ""
+  (declare (salience 100))
+  =>
+  (printout t crlf crlf)
+  (printout t "Generador de Menus")
+  (printout t crlf crlf)
+  (assert (start))
+)
+
+;;;*********************PREGUNTAS*****************
+
+(defrule pregunta-numero "Pregunta para saber el número de comensales"
+  (start)
+  =>
+  (printout t "Bienvenido, para obtener las sujerencias de menu responda a las siguientes preguntas." crlf)
+  (bind ?pers (pregunta-numerica "Cuantos menus quereis reservar?" 0 10000))
+  (assert (NumComensales ?pers))
+)
+
+(defrule pregunta-fecha "Pregunta para saber la fecha"
+  (start)
+  =>
+  (printout t "En que temporada sera el evento? Seleccione una de las siguientes:" crlf)
+  (printout t "1 - Invierno" crlf)
+  (printout t "2 - Primavera" crlf)
+  (printout t "3 - Verano" crlf)
+  (printout t "4 - Otono" crlf)
+  (bind ?resp (pregunta-numerica "Introduzca un número 1-4:" 1 4))
+  (if (= ?resp 1) then (assert (Temporada Invierno)))
+  (if (= ?resp 2) then (assert (Temporada Primavera)))
+  (if (= ?resp 3) then (assert (Temporada Verano)))
+  (if (= ?resp 4) then (assert (Temporada Otono)))
+)
+
+(defrule pregunta-precio "Pregunta para saber cuanto quiere gastarse"
+  (start)
+  =>
+  (bind ?pmax (pregunta-numerica "Cual es el precio maximo que quiere gastarse por menu?" 0 1000))
+  (assert (PrecioMaximo ?pmax))
+  (bind ?pmin (pregunta-numerica "Cual es el precio minimo que quiere gastarse por menu?" 0 ?pmax))
+  (assert (PrecioMaximo ?pmin))
+)
+
+(defrule pregunta-fecha "Pregunta para saber la fecha"
+  (start)
+  =>
+  (printout t "Que quiere para beber?" crlf)
+  (printout t "1 - Agua" crlf)
+  (printout t "2 - Cerveza" crlf)
+  (printout t "3 - Refresco" crlf)
+  (printout t "4 - Vino" crlf)
+  (printout t "5 - Maridaje (el sistema elijirá la bebida mas adecuada para cada plato)" crlf)
+  (bind ?resp (pregunta-numerica "Introduzca un número:" 1 5))
+  (if (= ?resp 1) then (assert (seleccion-tipo-bebida Agua)))
+  (if (= ?resp 2) then (assert (seleccion-tipo-bebida Cerveza)))
+  (if (= ?resp 3) then (assert (seleccion-tipo-bebida Refresco)))
+  (if (= ?resp 4) then (assert (seleccion-tipo-bebida Vino)))
+  (if (= ?resp 5) then (assert (Maridaje true)) else (assert (Maridaje false)))  
+)
+
+(defrule pregunta-agua "Pregunta para saber tipos de bebidas"
+  (start)
+  (seleccion-tipo-bebida Agua)
+  =>
+  (bind ?resp (pregunta-numerica "Agua natural (1) o con gas(2)? Indiferente(0):" 0 2))
+  (if (< ?resp 2) then (assert (Bebida AguaMineral)) else (assert(Bebida AguaGas)))
+)
+
+(defrule pregunta-cerveza "Pregunta para saber tipos de bebidas"
+  (start)
+  (seleccion-tipo-bebida Cerveza)
+  =>
+  (bind ?resp (pregunta-numerica "Prefiere cerveza de trigo(1) o cebada(2)? Indiferente(0):" 0 2))
+  (if (< ?resp 2) then (assert (Bebida CervezaTrigo)) else (assert(Bebida CervezaCebada)))
+)
+
+(defrule pregunta-refresco "Pregunta para saber tipos de bebidas"
+  (start)
+  (seleccion-tipo-bebida Refresco)
+  =>
+  (bind ?resp (pregunta-numerica "Prefiere CocaCola(1), Fanta(2) o Nestea(3)? Indiferente(0):" 0 3))
+  (if (< ?resp 2) then (assert (Bebida CocaCola)))
+  (if (= ?resp 2) then (assert (Bebida Fanta)))
+  (if (= ?resp 3) then (assert (Bebida Nestea)))
+)
+
+(defrule pregunta-vino "Pregunta para saber tipos de bebidas"
+  (start)
+  (seleccion-tipo-bebida Vino)
+  =>
+  (bind ?resp (pregunta-numerica "Prefiere vino tinto(1), blanco(2), rosado(3) o cava(4)? Indiferente(0):" 0 4))
+  (if (< ?resp 2) then (assert (Bebida VinoTinto)))
+  (if (= ?resp 2) then (assert (Bebida VinoBlanco)))
+  (if (= ?resp 3) then (assert (Bebida VinoRosado)))
+  (if (= ?resp 4) then (assert (Bebida Cava)))
+)
+
+(defrule pregunta-ingredientes "Pregunta para saber ingredientes prohibidos"
+  (start)
+  =>
+  (bind ?lista (find-all-instances ((?x Ingrediente)) TRUE))
+  (bind $?valores_permitidos (create$ 0))
+  (loop-for-count (?i 1 (length$ ?lista)) do
+     (printout t ?i " - " (send (nth$ ?i ?lista) get-nombre) crlf)
+     (bind $?valores_permitidos (insert$ ?valores_permitidos (+ (length$ ?valores_permitidos) 1) ?i))
+  )
+  (bind ?resp (pregunta-lista "Escribe los identificadores de los ingredientes prohibidos separados por espacios: " $?valores_permitidos))
+  (if (not (member 0 ?resp))
+    then
+      (progn$ (?it ?resp)
+        (assert (IngredienteProhibido (send (nth$ ?it ?lista) get-nombre)))
+      )
+  )
+)
+
+(defrule pregunta-estilo "Pregunta para saber tipo de cocina"
+  (start)
+  =>
+  (printout t "Que estilo de cocina prefiere?" crlf)
+  (bind ?lista (slot-allowed-values Plato estilo))
+  (bind $?valores_permitidos (create$ 0))
+  (loop-for-count (?i 1 (length$ ?lista)) do
+     (printout t ?i " - " (nth$ ?i ?lista) crlf)
+     (bind $?valores_permitidos (insert$ ?valores_permitidos (+ (length$ ?valores_permitidos) 1) ?i))
+  )
+  (bind ?resp (pregunta-numerica "Seleccione uno de los estilos anteriores " 1 (length$ ?lista)))
+  (assert (Estilo (nth$ ?resp ?lista)))
+)
+
+(defrule pregunta-regional "Pregunta para saber region"
+  (start)
+  (Estilo regional)
+  =>
+  (printout t "Escoja la region que prefiera de la lista siguiente" crlf)
+  (bind ?lista (slot-allowed-values Plato region))
+  (bind $?valores_permitidos (create$ 0))
+  (loop-for-count (?i 1 (length$ ?lista)) do
+     (printout t ?i " - " (nth$ ?i ?lista) crlf)
+     (bind $?valores_permitidos (insert$ ?valores_permitidos (+ (length$ ?valores_permitidos) 1) ?i))
+  )
+  (bind ?resp (pregunta-numerica "Seleccione una de las regiones anteriores " 1 (length$ ?lista)))
+  (assert (Region (nth$ ?resp ?lista)))
+)
+
+
+(defrule pregunta-vegetariano "Pregunta para saber si es vegetariano"
+  (start)
+  =>
+  (bind ?resp (pregunta-booleana "Quiere solo comida vegetariana?"))
+  (assert (Vegetariano ?resp))
+)
+
+;;;****************************
+
 
 (defmodule MAIN (export ?ALL))
 

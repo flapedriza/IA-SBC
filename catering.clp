@@ -507,6 +507,7 @@
     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
   )
+  (printout t "Generando menus..." crlf crlf)
   (loop-for-count (?i 1 (length$ ?primers)) do
     (bind ?prim (nth$ ?i ?primers))
     (loop-for-count (?j 1 (length$ ?segons)) do
@@ -536,6 +537,7 @@
     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
   )
+  (printout t "Generando menus..." crlf crlf)
   (loop-for-count (?i 1 (length$ ?primers)) do
     (bind ?prim (nth$ ?i ?primers))
     (loop-for-count (?j 1 (length$ ?segons)) do
@@ -554,11 +556,12 @@
   (export ?ALL)
 )
 
-(defrule crea-llistes 
+(defrule crea-llistes
   (not (llista-rec-baix))
   (not (llista-rec-mig))
   (not (llista-rec-alt))
   =>
+  (printout t "Creant llistes..." crlf)
   (bind $?lbaix (find-all-instances((?m Menu)) (eq ?m:coste bajo)))
   (bind $?lmed (find-all-instances((?m Menu)) (eq ?m:coste medio)))
   (bind $?lalt (find-all-instances((?m Menu)) (eq ?m:coste alto)))
@@ -568,17 +571,35 @@
   (assert (llista-rec-baix (recomanacions ?lbaix)))
   (assert (llista-rec-mig (recomanacions ?lmed)))
   (assert (llista-rec-alt (recomanacions ?lalt)))
+  (printout t "LListes creades" crlf)
 )
 
-(defrule pinta-menus
-  (llista-rec-baix (recomanacions ?lbaix))
-  (llista-rec-mig (recomanacions ?lmed))
-  (llista-rec-alt (recomanacions ?lalt))
+(defrule pinta-menu-baix
+  (llista-rec-baix (recomanacions $?lbaix))
+  (test (> (length$ ?lbaix) 0))
   =>
+  (printout t "Menu de precio bajo:" crlf )
   (bind ?mbaix (nth$ 1 ?lbaix))
-  (bind ?mmed (nth$ 1 ?lmed))
-  (bind ?malt (nth$ 1 ?lalt))
   (send ?mbaix imprimir)
-  (send ?mmed imprimir)
+  (assert (baix-pintat))
+)
+
+(defrule pinta-menu-mig
+  (llista-rec-mig (recomanacions $?lmig))
+  (test (> (length$ ?lmig) 0))
+  =>
+  (printout t "Menu de precio medio:" crlf )
+  (bind ?mmig (nth$ 1 ?lmig))
+  (send ?mmig imprimir)
+  (assert (mig-pintat))
+)
+
+(defrule pinta-menu-alt
+  (llista-rec-alt (recomanacions $?lalt))
+  (test (> (length$ ?lalt) 0))
+  =>
+  (printout t "Menu de precio alto:" crlf )
+  (bind ?malt (nth$ 1 ?lalt))
   (send ?malt imprimir)
+  (assert (alt-pintat))
 )

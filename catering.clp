@@ -225,7 +225,7 @@
   (printout t crlf crlf)
   (printout t "Generador de Menus")
   (printout t crlf crlf)
-  (printout t "Bienvenido, para obtener las sujerencias de menu responda a las siguientes preguntas." crlf)
+  (printout t "Bienvenido, para obtener las sugerencias de menu responda a las siguientes preguntas." crlf)
   (assert (start))
 )
 
@@ -490,6 +490,30 @@
   (printout t ?nom " es de temporada de " ?temp crlf)
   (send ?plat put-puntuacion(+ ?punt 40))
   (assert (temporada-valorat ?plat))
+)
+
+(defrule punts-medio
+  (NumComensales ?com)
+  (test (>= ?com 50))
+  ?plat <- (object (is-a Plato) (nombre ?nom) (compl ?compl) (puntuacion ?punt))
+  (not (medio-valorat ?plat))
+  =>
+  (if (or (eq ?compl baja) (eq ?compl media)) then
+    (printout t ?nom " tiene una complicacion " ?compl " (+)" crlf)
+    (send ?plat put-puntuacion(+ ?punt 30))
+    (assert (medio-valorat ?plat))
+  )
+)
+
+(defrule punts-alto
+  (NumComensales ?com)
+  (test (>= ?com 100))
+  ?plat <- (object (is-a Plato) (nombre ?nom) (compl media) (puntuacion ?punt))
+  (not (alto-valorat ?plat))
+  =>
+  (printout t ?nom " tiene una complicacion media (-)" crlf)
+  (send ?plat put-puntuacion(- ?punt 30))
+  (assert (alto-valorat ?plat))
 )
 
 (defrule genera-menus-mari ""

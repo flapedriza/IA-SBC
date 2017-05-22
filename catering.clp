@@ -565,10 +565,13 @@
   (bind ?printed 0)
   (send (nth$ 1 ?llist) imprimir)
   (bind ?prim (send (nth$ 1 ?llist) get-primero))
+  (bind ?seg (send (nth$ 1 ?llist) get-segundo))
   (while (and (<= ?i (length$ ?llist)) (< ?printed 2)) do
     (bind ?prim2 (send (nth$ ?i ?llist) get-primero))
-    (if (or (neq ?prim ?prim2) (>= (+ ?i 2) (length$ ?llist))) then
+    (bind ?seg2 (send (nth$ ?i ?llist) get-segundo))
+    (if (or (and (neq ?prim ?prim2) (neq ?seg ?seg2)) (>= (+ ?i 2) (length$ ?llist))) then
       (bind ?prim ?prim2)
+      (bind ?seg ?seg2)
       (send (nth$ ?i ?llist) imprimir)
       (bind ?printed (+ ?printed 1))
     )

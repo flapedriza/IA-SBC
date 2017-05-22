@@ -2,14 +2,16 @@
 ;;;Codi CLIPS
 ;;;*************
 
-
-;;;Template per a la llista de recomanacions sense ordenar
-(deftemplate llista-rec-desordenada
+;;;Template per a les llistes de recomanacions
+(deftemplate llista-rec-baix
   (multislot recomanacions (type INSTANCE))
 )
 
-;;;Template per a la llista de recomanacions ordenada
-(deftemplate llista-rec-ordenada
+(deftemplate llista-rec-mig
+  (multislot recomanacions (type INSTANCE))
+)
+
+(deftemplate llista-rec-alt
   (multislot recomanacions (type INSTANCE))
 )
 
@@ -32,6 +34,7 @@
     (bind ?beb2 (send ?segon get-marida_con))
     (if (eq ?beb2 [nil]) then (bind ?beb2 nil))
   )
+  (bind ?punt (+ (send ?primer get-puntuacion) (send ?segon get-puntuacion) (send ?postre get-puntuacion)))
   (bind ?newMen
     (make-instance (sym-cat Menu:(send ?primer get-nombre)-(send ?segon get-nombre)-(send ?postre get-nombre)) of Menu
       (primero ?primer)
@@ -40,6 +43,7 @@
       (bebida1 ?beb1)
       (bebida2 ?beb2)
       (maridaje ?maridaje)
+      (puntuacion ?punt)
     )
   )
   (send ?newMen calc-coste ?min ?max)
@@ -65,6 +69,12 @@
 (deffunction busca-beguda (?tipus)
   (bind ?ret (nth$ 1 (busca-inst ?tipus)))
   ?ret
+)
+
+(deffunction menu-compare (?m1 ?m2)
+  (bind ?punt1 (send ?m1 get-puntuacion))
+  (bind ?punt2 (send ?m2 get-puntuacion))
+  (< ?punt1 ?punt2)
 )
 
 
@@ -135,6 +145,7 @@
   (send ?self:bebida1 imprimir)
   (if(neq ?self:bebida2 nil) then (send ?self:bebida2 imprimir))
   (printout t crlf "Precio total: " (send ?self calc-precio) "euros" crlf)
+  (printout t "Puntuacion: " ?self:puntuacion crlf)
   (printout t "-------------------------------" crlf)
 )
 
@@ -236,10 +247,10 @@
   (printout t "3 - Verano" crlf)
   (printout t "4 - Otono" crlf)
   (bind ?resp (pregunta-numerica "Introduzca un número 1-4:" 1 4))
-  (if (= ?resp 1) then (assert (Temporada Invierno)))
-  (if (= ?resp 2) then (assert (Temporada Primavera)))
-  (if (= ?resp 3) then (assert (Temporada Verano)))
-  (if (= ?resp 4) then (assert (Temporada Otono)))
+  (if (= ?resp 1) then (assert (Temporada invierno)))
+  (if (= ?resp 2) then (assert (Temporada primavera)))
+  (if (= ?resp 3) then (assert (Temporada verano)))
+  (if (= ?resp 4) then (assert (Temporada otono)))
 )
 
 (defrule pregunta-precio "Pregunta para saber cuanto quiere gastarse"
@@ -402,87 +413,172 @@
 (defrule focus-menus
   (declare (salience -10))
   =>
-  (assert (menus))
-  (focus menus)
+  (focus puntuacio)
 )
 ;;;*************
 ;;;Recomanacions
 ;;;*************
 ;(do-for-all-instances ((?p Plato))  (or (eq (send ?p get-orden) primero) (eq (send ?p get-orden) ambos)) (send ?p imprimir))
 
-(defmodule menus
+(defmodule puntuacio
   (import MAIN ?ALL)
   (import filtre ?ALL)
   (export ?ALL)
 )
-; (defrule genera-menus-mari ""
-;   ?v <- (menus)
-;   (Maridaje TRUE)
-;   (PrecioMaximo ?max)
-;   (PrecioMinimo ?min)
-;   =>
-;   (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
-;   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
-;   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
-;   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
-;   (bind ?beguda (busca-beguda AguaMineral))
-;   (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
-;     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
-;     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
-;   )
-;   (loop-for-count (?i 1 (length$ ?primers)) do
-;     (bind ?prim (nth$ ?i ?primers))
-;     (loop-for-count (?j 1 (length$ ?segons)) do
-;     (bind ?seg (nth$ ?j ?segons))
-;       (loop-for-count (?k 1 (length$ ?postres)) do
-;         (bind ?postr (nth$ ?k ?postres))
-;         (create-menu ?prim ?seg ?postr TRUE ?beguda ?max ?min)
-;       )
-;     )
-;   )
-;   (assert (menus_generados))
-;   (retract ?v)
-; )
-
-; (defrule genera-menus-no-mari ""
-;   ?v <- (menus)
-;   (Maridaje FALSE)
-;   (PrecioMaximo ?max)
-;   (PrecioMinimo ?min)
-;   (Bebida ?selbeb)
-;   =>
-;   (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
-;   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
-;   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
-;   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
-;   (bind ?beguda (busca-beguda ?selbeb))
-;   (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
-;     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
-;     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
-;   )
-;   (loop-for-count (?i 1 (length$ ?primers)) do
-;     (bind ?prim (nth$ ?i ?primers))
-;     (loop-for-count (?j 1 (length$ ?segons)) do
-;     (bind ?seg (nth$ ?j ?segons))
-;       (loop-for-count (?k 1 (length$ ?postres)) do
-;         (bind ?postr (nth$ ?k ?postres))
-;         (create-menu ?prim ?seg ?postr FALSE ?beguda ?max ?min)
-;       )
-;     )
-;   )
-;   (assert (menus_generados))
-;   (retract ?v)
-; )
 
 (defrule punts-estil
-  (not (Estilo Indiferente))
-  (not (Estilo Regional))
+  (not (Estilo indiferente))
+  (not (Estilo regional))
   (Estilo ?est)
-  ?plat <- (object (is-a Plato) (nombre ?nom) (estilo ?plest) (puntuacion ?punt))
+  ?plat <- (object (is-a Plato) (nombre ?nom) (estilo $?plest) (puntuacion ?punt))
+  (test (member$ ?est ?plest))
   (not (estil-valorat ?plat))
   =>
-  
   (printout t ?nom " es de estilo " ?est crlf)
-  (send ?plat put-puntuacion (+ ?punt 10))
+  (send ?plat put-puntuacion (+ ?punt 50))
   (assert (estil-valorat ?plat))
+)
+
+(defrule punts-regio
+  (Estilo regional)
+  (Region ?reg)
+  ?plat <- (object (is-a Plato) (nombre ?nom) (estilo $?plest) (region ?preg) (puntuacion ?punt))
+  (test (member$ regional ?plest))
+  (test (eq ?reg ?preg))
+  (not (regio-valorat ?plat))
+  =>
+  (printout t ?nom " es de " ?reg crlf)
+  (send ?plat put-puntuacion (+ ?punt 50))
+  (assert (regio-valorat ?plat))
+)
+
+(defrule punts-calent
+  (or
+    (Temporada invierno)
+    (Temporada otono)
+  )
+  ?plat <- (object (is-a Plato) (nombre ?nom) (temperatura ?tem) (puntuacion ?punt))
+  (test (eq caliente ?tem))
+  (not (temp-valorat ?plat))
+  =>
+  (printout t ?nom " es un plato caliente" crlf)
+  (send ?plat put-puntuacion (+ ?punt 20))
+  (assert (temp-valorat ?plat))
+)
+
+(defrule punts-fred
+  (or
+    (Temporada primavera)
+    (Temporada verano)
+  )
+  ?plat <- (object (is-a Plato) (nombre ?nom) (temperatura frio) (puntuacion ?punt) (orden ?ord))
+  (test (neq ?ord postre))
+  ;(test (eq frio ?tem))
+  (not (temp-valorat ?plat))
+  =>
+  (printout t ?nom " es un plato frio" crlf)
+  (send ?plat put-puntuacion (+ ?punt 20))
+  (assert (temp-valorat ?plat))
+)
+
+(defrule punts-temporada
+  (Temporada ?temp)
+  ?plat <- (object (is-a Plato) (nombre ?nom) (epoca $?ep) (puntuacion ?punt))
+  (test (member$ ?temp ?ep))
+  (not (temporada-valorat ?plat))
+  =>
+  (printout t ?nom " es de temporada de " ?temp crlf)
+  (send ?plat put-puntuacion(+ ?punt 40))
+  (assert (temporada-valorat ?plat))
+)
+
+(defrule genera-menus-mari ""
+  (declare (salience -10))
+  (Maridaje TRUE)
+  (PrecioMaximo ?max)
+  (PrecioMinimo ?min)
+  =>
+  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (bind ?beguda (busca-beguda AguaMineral))
+  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+  )
+  (loop-for-count (?i 1 (length$ ?primers)) do
+    (bind ?prim (nth$ ?i ?primers))
+    (loop-for-count (?j 1 (length$ ?segons)) do
+    (bind ?seg (nth$ ?j ?segons))
+      (loop-for-count (?k 1 (length$ ?postres)) do
+        (bind ?postr (nth$ ?k ?postres))
+        (create-menu ?prim ?seg ?postr TRUE ?beguda ?max ?min)
+      )
+    )
+  )
+  (focus recomanar)
+)
+
+(defrule genera-menus-no-mari ""
+  (declare (salience -10))
+  (Maridaje FALSE)
+  (PrecioMaximo ?max)
+  (PrecioMinimo ?min)
+  (Bebida ?selbeb)
+  =>
+  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+  (bind ?beguda (busca-beguda ?selbeb))
+  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+  )
+  (loop-for-count (?i 1 (length$ ?primers)) do
+    (bind ?prim (nth$ ?i ?primers))
+    (loop-for-count (?j 1 (length$ ?segons)) do
+    (bind ?seg (nth$ ?j ?segons))
+      (loop-for-count (?k 1 (length$ ?postres)) do
+        (bind ?postr (nth$ ?k ?postres))
+        (create-menu ?prim ?seg ?postr FALSE ?beguda ?max ?min)
+      )
+    )
+  )
+  (focus recomanar)
+)
+
+(defmodule recomanar
+  (import MAIN ?ALL)
+  (export ?ALL)
+)
+
+(defrule crea-llistes 
+  (not (llista-rec-baix))
+  (not (llista-rec-mig))
+  (not (llista-rec-alt))
+  =>
+  (bind $?lbaix (find-all-instances((?m Menu)) (eq ?m:coste bajo)))
+  (bind $?lmed (find-all-instances((?m Menu)) (eq ?m:coste medio)))
+  (bind $?lalt (find-all-instances((?m Menu)) (eq ?m:coste alto)))
+  (bind ?lbaix (sort menu-compare ?lbaix))
+  (bind ?lmed (sort menu-compare ?lmed))
+  (bind ?lalt (sort menu-compare ?lalt))
+  (assert (llista-rec-baix (recomanacions ?lbaix)))
+  (assert (llista-rec-mig (recomanacions ?lmed)))
+  (assert (llista-rec-alt (recomanacions ?lalt)))
+)
+
+(defrule pinta-menus
+  (llista-rec-baix (recomanacions ?lbaix))
+  (llista-rec-mig (recomanacions ?lmed))
+  (llista-rec-alt (recomanacions ?lalt))
+  =>
+  (bind ?mbaix (nth$ 1 ?lbaix))
+  (bind ?mmed (nth$ 1 ?lmed))
+  (bind ?malt (nth$ 1 ?lalt))
+  (send ?mbaix imprimir)
+  (send ?mmed imprimir)
+  (send ?malt imprimir)
 )

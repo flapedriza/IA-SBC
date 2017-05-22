@@ -3,3 +3,4 @@
 (load instances.clp)
 (load catering.clp)
 (reset)
+(run)

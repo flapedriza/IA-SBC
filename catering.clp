@@ -558,48 +558,68 @@
 
 (defrule crea-llistes
   (not (llista-rec-baix))
-  (not (llista-rec-mig))
-  (not (llista-rec-alt))
   =>
-  (printout t "Creant llistes..." crlf)
-  (bind $?lbaix (find-all-instances((?m Menu)) (eq ?m:coste bajo)))
-  (bind $?lmed (find-all-instances((?m Menu)) (eq ?m:coste medio)))
-  (bind $?lalt (find-all-instances((?m Menu)) (eq ?m:coste alto)))
-  (bind ?lbaix (sort menu-compare ?lbaix))
-  (bind ?lmed (sort menu-compare ?lmed))
-  (bind ?lalt (sort menu-compare ?lalt))
-  (assert (llista-rec-baix (recomanacions ?lbaix)))
-  (assert (llista-rec-mig (recomanacions ?lmed)))
-  (assert (llista-rec-alt (recomanacions ?lalt)))
-  (printout t "LListes creades" crlf)
+  (bind $?llist (find-all-instances((?m Menu)) TRUE))
+  (bind $?llist (sort menu-compare ?llist))
+  (bind ?i 1)
+  (bind ?printed 0)
+  (send (nth$ 1 ?llist) imprimir)
+  (bind ?prim (send (nth$ 1 ?llist) get-primero))
+  (while (and (<= ?i (length$ ?llist)) (< ?printed 2)) do
+    (bind ?prim2 (send (nth$ ?i ?llist) get-primero))
+    (if (or (neq ?prim ?prim2) (>= (+ ?i 2) (length$ ?llist))) then
+      (bind ?prim ?prim2)
+      (send (nth$ ?i ?llist) imprimir)
+      (bind ?printed (+ ?printed 1))
+    )
+    (bind ?i (+ ?i 1))
+  )
 )
 
-(defrule pinta-menu-baix
-  (llista-rec-baix (recomanacions $?lbaix))
-  (test (> (length$ ?lbaix) 0))
-  =>
-  (printout t "Menu de precio bajo:" crlf )
-  (bind ?mbaix (nth$ 1 ?lbaix))
-  (send ?mbaix imprimir)
-  (assert (baix-pintat))
-)
-
-(defrule pinta-menu-mig
-  (llista-rec-mig (recomanacions $?lmig))
-  (test (> (length$ ?lmig) 0))
-  =>
-  (printout t "Menu de precio medio:" crlf )
-  (bind ?mmig (nth$ 1 ?lmig))
-  (send ?mmig imprimir)
-  (assert (mig-pintat))
-)
-
-(defrule pinta-menu-alt
-  (llista-rec-alt (recomanacions $?lalt))
-  (test (> (length$ ?lalt) 0))
-  =>
-  (printout t "Menu de precio alto:" crlf )
-  (bind ?malt (nth$ 1 ?lalt))
-  (send ?malt imprimir)
-  (assert (alt-pintat))
-)
+; (defrule crea-llistes
+;   (not (llista-rec-baix))
+;   (not (llista-rec-mig))
+;   (not (llista-rec-alt))
+;   =>
+;   (printout t "Creant llistes..." crlf)
+;   (bind $?lbaix (find-all-instances((?m Menu)) (eq ?m:coste bajo)))
+;   (bind $?lmed (find-all-instances((?m Menu)) (eq ?m:coste medio)))
+;   (bind $?lalt (find-all-instances((?m Menu)) (eq ?m:coste alto)))
+;   (bind ?lbaix (sort menu-compare ?lbaix))
+;   (bind ?lmed (sort menu-compare ?lmed))
+;   (bind ?lalt (sort menu-compare ?lalt))
+;   (assert (llista-rec-baix (recomanacions ?lbaix)))
+;   (assert (llista-rec-mig (recomanacions ?lmed)))
+;   (assert (llista-rec-alt (recomanacions ?lalt)))
+;   (printout t "LListes creades" crlf)
+; )
+;
+; (defrule pinta-menu-baix
+;   (llista-rec-baix (recomanacions $?lbaix))
+;   (test (> (length$ ?lbaix) 0))
+;   =>
+;   (printout t "Menu de precio bajo:" crlf )
+;   (bind ?mbaix (nth$ 1 ?lbaix))
+;   (send ?mbaix imprimir)
+;   (assert (baix-pintat))
+; )
+;
+; (defrule pinta-menu-mig
+;   (llista-rec-mig (recomanacions $?lmig))
+;   (test (> (length$ ?lmig) 0))
+;   =>
+;   (printout t "Menu de precio medio:" crlf )
+;   (bind ?mmig (nth$ 1 ?lmig))
+;   (send ?mmig imprimir)
+;   (assert (mig-pintat))
+; )
+;
+; (defrule pinta-menu-alt
+;   (llista-rec-alt (recomanacions $?lalt))
+;   (test (> (length$ ?lalt) 0))
+;   =>
+;   (printout t "Menu de precio alto:" crlf )
+;   (bind ?malt (nth$ 1 ?lalt))
+;   (send ?malt imprimir)
+;   (assert (alt-pintat))
+; )

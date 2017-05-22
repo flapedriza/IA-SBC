@@ -1,8 +1,8 @@
-; Sun May 21 18:50:38 CEST 2017
-;
+; Mon May 22 16:25:54 CEST 2017
+; 
 ;+ (version "3.5")
 ;+ (build "Build 663")
-(definstances instancies
+(definstances instances
 	([ontologia_Class0] of  Plato
 
 		(compl baja)

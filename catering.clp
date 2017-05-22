@@ -415,62 +415,74 @@
   (import filtre ?ALL)
   (export ?ALL)
 )
+; (defrule genera-menus-mari ""
+;   ?v <- (menus)
+;   (Maridaje TRUE)
+;   (PrecioMaximo ?max)
+;   (PrecioMinimo ?min)
+;   =>
+;   (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+;   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+;   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+;   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+;   (bind ?beguda (busca-beguda AguaMineral))
+;   (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+;     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+;     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+;   )
+;   (loop-for-count (?i 1 (length$ ?primers)) do
+;     (bind ?prim (nth$ ?i ?primers))
+;     (loop-for-count (?j 1 (length$ ?segons)) do
+;     (bind ?seg (nth$ ?j ?segons))
+;       (loop-for-count (?k 1 (length$ ?postres)) do
+;         (bind ?postr (nth$ ?k ?postres))
+;         (create-menu ?prim ?seg ?postr TRUE ?beguda ?max ?min)
+;       )
+;     )
+;   )
+;   (assert (menus_generados))
+;   (retract ?v)
+; )
 
-(defrule genera-menus-mari ""
-  ?v <- (menus)
-  (Maridaje TRUE)
-  (PrecioMaximo ?max)
-  (PrecioMinimo ?min)
-  =>
-  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
-  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
-  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
-  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
-  (bind ?beguda (busca-beguda AguaMineral))
-  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
-    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
-    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
-  )
-  (loop-for-count (?i 1 (length$ ?primers)) do
-    (bind ?prim (nth$ ?i ?primers))
-    (loop-for-count (?j 1 (length$ ?segons)) do
-    (bind ?seg (nth$ ?j ?segons))
-      (loop-for-count (?k 1 (length$ ?postres)) do
-        (bind ?postr (nth$ ?k ?postres))
-        (create-menu ?prim ?seg ?postr TRUE ?beguda ?max ?min)
-      )
-    )
-  )
-  (assert (menus_generados))
-  (retract ?v)
-)
+; (defrule genera-menus-no-mari ""
+;   ?v <- (menus)
+;   (Maridaje FALSE)
+;   (PrecioMaximo ?max)
+;   (PrecioMinimo ?min)
+;   (Bebida ?selbeb)
+;   =>
+;   (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
+;   (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
+;   (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
+;   (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
+;   (bind ?beguda (busca-beguda ?selbeb))
+;   (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
+;     (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
+;     (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
+;   )
+;   (loop-for-count (?i 1 (length$ ?primers)) do
+;     (bind ?prim (nth$ ?i ?primers))
+;     (loop-for-count (?j 1 (length$ ?segons)) do
+;     (bind ?seg (nth$ ?j ?segons))
+;       (loop-for-count (?k 1 (length$ ?postres)) do
+;         (bind ?postr (nth$ ?k ?postres))
+;         (create-menu ?prim ?seg ?postr FALSE ?beguda ?max ?min)
+;       )
+;     )
+;   )
+;   (assert (menus_generados))
+;   (retract ?v)
+; )
 
-(defrule genera-menus-no-mari ""
-  ?v <- (menus)
-  (Maridaje FALSE)
-  (PrecioMaximo ?max)
-  (PrecioMinimo ?min)
-  (Bebida ?selbeb)
+(defrule punts-estil
+  (not (Estilo Indiferente))
+  (not (Estilo Regional))
+  (Estilo ?est)
+  ?plat <- (object (is-a Plato) (nombre ?nom) (estilo ?plest) (puntuacion ?punt))
+  (not (estil-valorat ?plat))
   =>
-  (bind $?primers (find-all-instances ((?p Plato))  (eq (send ?p get-orden) primero)))
-  (bind $?segons (find-all-instances ((?p Plato))  (eq (send ?p get-orden) segundo)))
-  (bind $?postres (find-all-instances ((?p Plato))  (eq (send ?p get-orden) postre)))
-  (bind $?priseg (find-all-instances ((?p Plato))  (eq (send ?p get-orden) ambos)))
-  (bind ?beguda (busca-beguda ?selbeb))
-  (loop-for-count (?i 1 (/ (length$ ?priseg) 2)) do
-    (bind ?primers (insert$ ?primers (+ (length$ ?primers) 1) (nth$ ?i ?priseg)))
-    (bind ?segons (insert$ ?segons (+ (length$ ?segons) 1) (nth$ (+ (/ (length$ ?priseg) 2) ?i) ?priseg)))
-  )
-  (loop-for-count (?i 1 (length$ ?primers)) do
-    (bind ?prim (nth$ ?i ?primers))
-    (loop-for-count (?j 1 (length$ ?segons)) do
-    (bind ?seg (nth$ ?j ?segons))
-      (loop-for-count (?k 1 (length$ ?postres)) do
-        (bind ?postr (nth$ ?k ?postres))
-        (create-menu ?prim ?seg ?postr FALSE ?beguda ?max ?min)
-      )
-    )
-  )
-  (assert (menus_generados))
-  (retract ?v)
+  
+  (printout t ?nom " es de estilo " ?est crlf)
+  (send ?plat put-puntuacion (+ ?punt 10))
+  (assert (estil-valorat ?plat))
 )

@@ -1,4 +1,4 @@
-; Sun May 21 18:50:54 CEST 2017
+; Mon May 22 16:25:59 CEST 2017
 ; 
 ;+ (version "3.5")
 ;+ (build "Build 663")
@@ -75,17 +75,17 @@
 ;+		(allowed-classes Plato)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
-	(single-slot tipo_ref
-;+		(comment "el tipo de refresco")
-		(type SYMBOL)
-		(allowed-values cocacola fanta nestea)
-;+		(cardinality 1 1)
-		(create-accessor read-write))
 	(single-slot maridaje
 ;+		(comment "si se quiere una bebida adecuada para los platos, una que combine bien,")
 		(type SYMBOL)
 		(allowed-values FALSE TRUE)
 		(default FALSE)
+;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot tipo_ref
+;+		(comment "el tipo de refresco")
+		(type SYMBOL)
+		(allowed-values cocacola fanta nestea)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot puntuacion
@@ -117,16 +117,20 @@
 		(allowed-values Espana Italia Alemania UK Francia)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(multislot preferencia
-		(type INSTANCE)
-;+		(allowed-classes Preferencia)
-		(cardinality 3 3)
+	(single-slot ontologia_Class40000
+		(type STRING)
+;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot bebida1
 ;+		(comment "bebida del primero / bebida para todo el menu en caso de no haber bebida2")
 		(type INSTANCE)
 ;+		(allowed-classes Bebida)
 ;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(multislot preferencia
+		(type INSTANCE)
+;+		(allowed-classes Preferencia)
+		(cardinality 3 3)
 		(create-accessor read-write))
 	(single-slot bebida2
 ;+		(comment "bebida del segundo plato en caso de haber una para cada")
@@ -164,16 +168,16 @@
 ;+		(allowed-classes Restriccion)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
-	(single-slot coste
-;+		(comment "coste del menu entre los 3 posibles. Dependera del precio maximo y minimo marcado por el cliente")
-		(type SYMBOL)
-		(allowed-values bajo medio alto)
-;+		(cardinality 1 1)
-		(create-accessor read-write))
 	(single-slot tipo_ag
 ;+		(comment "si es mineral o con gas")
 		(type SYMBOL)
 		(allowed-values mineral gas)
+;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot coste
+;+		(comment "coste del menu entre los 3 posibles. Dependera del precio maximo y minimo marcado por el cliente")
+		(type SYMBOL)
+		(allowed-values bajo medio alto)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(single-slot nombre
@@ -234,15 +238,22 @@
 		(allowed-values baja media alta)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
+	(single-slot marida_con
+;+		(comment "con que bebida se asocia mejor")
+		(type INSTANCE)
+;+		(allowed-classes Bebida)
+;+		(cardinality 0 1)
+		(create-accessor read-write))
 	(single-slot nombre
 ;+		(comment "nombre del ingrediente / plato")
 		(type STRING)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
-	(single-slot marida_con
-;+		(comment "con que bebida se asocia mejor")
-		(type INSTANCE)
-;+		(allowed-classes Bebida)
+	(single-slot puntuacion
+;+		(comment "Puntuacion del menu en base al sistema de recomendacion")
+		(type INTEGER)
+		(range 0 %3FVARIABLE)
+		(default 0)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot orden
@@ -257,12 +268,11 @@
 		(allowed-values frio caliente)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
-	(single-slot preparacion
-;+		(comment "como se ha cocinado")
+	(single-slot region
+;+		(comment "si se desea el plato de alguna region en concreto (si se deja vacio, todos los platos entran, y solo vale si en estilo hay regional)")
 		(type SYMBOL)
-		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa%2Fcrema)
-		(default indiferente)
-;+		(cardinality 1 1)
+		(allowed-values Espana Italia Alemania UK Francia)
+;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(single-slot vegetariano
 ;+		(comment "si es para vegetarianos o no")
@@ -271,10 +281,15 @@
 		(default FALSE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
-	(single-slot region
-;+		(comment "si se desea el plato de alguna region en concreto (si se deja vacio, todos los platos entran, y solo vale si en estilo hay regional)")
+	(single-slot preparacion
+;+		(comment "como se ha cocinado")
 		(type SYMBOL)
-		(allowed-values Espana Italia Alemania UK Francia)
+		(allowed-values plancha horno brasa estofado hervido frito rebozado otro indiferente sopa%2Fcrema)
+		(default indiferente)
+;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot ontologia_Class40000
+		(type STRING)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
 	(multislot contiene
@@ -371,16 +386,16 @@
 		(allowed-values primavera verano otono invierno siempre)
 		(cardinality 1 3)
 		(create-accessor read-write))
-	(single-slot num_comensales
-;+		(comment "cuantos comensales asistiran")
-		(type INTEGER)
-		(range 1 %3FVARIABLE)
-;+		(cardinality 1 1)
-		(create-accessor read-write))
 	(single-slot restriccion
 ;+		(comment "que restriccion tiene asociada el evento (precio, bebida...)")
 		(type INSTANCE)
 ;+		(allowed-classes Restriccion)
+;+		(cardinality 1 1)
+		(create-accessor read-write))
+	(single-slot num_comensales
+;+		(comment "cuantos comensales asistiran")
+		(type INTEGER)
+		(range 1 %3FVARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(multislot menus
@@ -411,14 +426,21 @@
 		(range 1 %3FVARIABLE)
 ;+		(cardinality 1 1)
 		(create-accessor read-write))
+	(single-slot vegetariano
+;+		(comment "si es para vegetarianos o no")
+		(type SYMBOL)
+		(allowed-values FALSE TRUE)
+		(default FALSE)
+;+		(cardinality 1 1)
+		(create-accessor read-write))
 	(single-slot region
 ;+		(comment "si se desea el plato de alguna region en concreto (si se deja vacio, todos los platos entran, y solo vale si en estilo hay regional)")
 		(type SYMBOL)
 		(allowed-values Espana Italia Alemania UK Francia)
 ;+		(cardinality 0 1)
 		(create-accessor read-write))
-	(single-slot vegetariano
-;+		(comment "si es para vegetarianos o no")
+	(single-slot maridaje
+;+		(comment "si se quiere una bebida adecuada para los platos, una que combine bien,")
 		(type SYMBOL)
 		(allowed-values FALSE TRUE)
 		(default FALSE)
@@ -428,13 +450,6 @@
 ;+		(comment "ingredientes prohibidos para los menus del evento")
 		(type INSTANCE)
 ;+		(allowed-classes Ingrediente)
-		(create-accessor read-write))
-	(single-slot maridaje
-;+		(comment "si se quiere una bebida adecuada para los platos, una que combine bien,")
-		(type SYMBOL)
-		(allowed-values FALSE TRUE)
-		(default FALSE)
-;+		(cardinality 1 1)
 		(create-accessor read-write))
 	(multislot preferencia
 		(type INSTANCE)
